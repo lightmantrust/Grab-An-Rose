@@ -1,0 +1,14 @@
+infra/
+# Terraform config 
+services/
+# Microservices
+auth/
+# Auth service (NestJS) 
+k8s/
+# Kubernetes manifests
+helm/
+# Helm charts 
+mobile/
+# React Native mobile app 
+.github/workflows/
+# CI/CD pipelines
