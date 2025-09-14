@@ -1,0 +1,40 @@
+# Grab An 🌹 — Architecture Overview
+
+## High-Level Architecture
+- **Frontend**: React Native app (iOS & Android).
+- **Backend**: Node.js microservices (NestJS) deployed on GKE.
+- **Infra**: GCP (GKE, Cloud SQL Postgres, Redis, Cloud Storage).
+- **CI/CD**: GitHub Actions -> GCP Artifact Registry -> GKE.
+- **Observability**: Stackdriver logging + monitoring, Prometheus + Grafana (planned).
+
+## Microservices
+- **Auth Service**: Handles signup/login, JWT, OTP, KYC.
+- **Trips Service**: Trip requests, matching, status tracking.
+- **Payments Service**: GCash, Visa, Cash, Crypto (optional).
+- **Marketplace Service**: Food & parcel delivery ordering.
+- **Dispatch Service**: Dynamic routing, driver assignment.
+
+## Data Stores
+- **Postgres (CloudSQL)**: Main transactional DB (users, trips, payments, orders).
+- **Redis**: Caching, session storage, geolocation indexing.
+- **Cloud Storage**: Uploads (ID docs, receipts, media).
+
+## Security
+- Enforce female-only user base via KYC.
+- All services JWT-protected.
+- Sensitive secrets in GCP Secret Manager.
+
+## Deployment Pipeline
+1. Developer pushes code -> GitHub.
+2. GitHub Actions builds Docker images.
+3. Images pushed to GCP Artifact Registry.
+4. Kubernetes manifests/Helm charts applied to GKE.
+
+## Diagrams
+- See `docs/diagrams/architecture.puml` for PlantUML source.
+- Export PNG/SVG for inclusion in presentations.
+
+## Next Steps
+- Implement Helm charts for scalable k8s deploy.
+- Expand observability stack.
+- Prepare staging environment for UAT in Cebu.
