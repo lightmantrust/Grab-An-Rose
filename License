@@ -1,0 +1,46 @@
+### Files to add to repo now
+1. `README.md` (above)
+2. `infra/` folder with Terraform skeleton from spec
+3. `k8s/` folder with raw manifests (auth, trips, ingress)
+4. `.github/workflows/ci-cd.yml` (from spec)
+5. `api/openapi.yaml` (from spec)
+6. `docs/` folder with exported PlantUML diagrams (PNG/SVG)
+7. Empty `services/` subfolders with `package.json` placeholders for microservices
+
+---
+
+Would you like me to also generate a **CONTRIBUTING.md** and **docs/ARCHITECTURE.md** so your repo is onboarding-ready for outside developers? Or keep it lean for now?
+
+
+## CONTRIBUTING.md (for repo root)
+```markdown
+# Contributing to Grab An 🌹
+
+We welcome contributions! Please follow these steps:
+
+## Workflow
+1. Fork this repo.
+2. Create a feature branch: `git checkout -b feature/<your-feature>`.
+3. Commit changes (use conventional commits, e.g., `feat(auth): add OTP login`).
+4. Run tests locally (`npm test` or `yarn test`).
+5. Push to your fork.
+6. Open a Pull Request (PR) into `main`.
+
+## Code Guidelines
+- **Language**: TypeScript (NestJS) for microservices, React Native for mobile.
+- **Linting**: Run `npm run lint` before pushing.
+- **Tests**: All new features require unit tests. Use Jest.
+- **Docs**: Update `api/openapi.yaml` and relevant `/docs` diagrams if you change endpoints.
+
+## Commit Message Convention
+We follow [Conventional Commits](https://www.conventionalcommits.org/).
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation only changes
+- `chore:` tooling/config updates
+
+## Pull Request Review
+- At least one maintainer must approve.
+- CI must pass before merge.
+
+Thank you for making Grab An 🌹 better!
