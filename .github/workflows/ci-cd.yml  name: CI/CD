@@ -1,0 +1,28 @@
+name: CI/CD
+on:
+  push:
+    branches: [ main, staging ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Build auth image
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/auth-service:${{ github.sha }} ./services/auth
+          echo ${{ secrets.GCP_SA_KEY }} > gcloud-key.json
+          gcloud auth activate-service-account --key-file=gcloud-key.json
+          gcloud --quiet auth configure-docker
+          docker push gcr.io/${{ secrets.GCP_PROJECT }}/auth-service:${{ github.sha }}
+      - name: Deploy to GKE
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region ${{ secrets.GKE_REGION }} --project ${{ secrets.GCP_PROJECT }}
+          kubectl apply -f k8s/
+        env:
+          GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+          GKE_REGION: ${{ secrets.GKE_REGION }}
