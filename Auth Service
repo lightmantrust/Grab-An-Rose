@@ -1,0 +1,3 @@
+cd services/auth
+npm install
+npm run dev
