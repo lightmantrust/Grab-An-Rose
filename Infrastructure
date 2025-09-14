@@ -1,0 +1,10 @@
+Terraform backend in infra/backend.tf → GCS bucket required.
+
+Kubernetes manifests in k8s/.
+
+Helm charts in helm/.
+
+
+Deploy auth service to GKE:
+
+kubectl apply -f k8s/
