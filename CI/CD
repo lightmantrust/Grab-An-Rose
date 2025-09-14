@@ -1,0 +1,12 @@
+CI/CD
+
+GitHub Actions pipeline (.github/workflows/ci-cd.yml) builds Docker images, pushes to GCR, and applies to GKE.
+Secrets required in repo settings:
+
+GCP_PROJECT
+
+GCP_SA_KEY
+
+GKE_CLUSTER
+
+GKE_REGION
