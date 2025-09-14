@@ -1,0 +1,6 @@
+JWT_SECRET – secret key for signing tokens
+
+DATABASE_URL – Postgres connection string
+
+
+Kubernetes pulls DATABASE_URL from secret pg-credentials.
