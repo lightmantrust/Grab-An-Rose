@@ -1,0 +1,8 @@
+replicaCount: 2
+image:
+  repository: gcr.io/PROJECT_ID/auth-service
+  tag: latest
+service:
+  type: ClusterIP
+  port: 80
+resources: {}
