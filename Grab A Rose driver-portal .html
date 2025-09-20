@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FemCabs - Driver Portal</title>
+    <meta name="description" content="Real-time driver management platform with interactive maps and wallet system">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B5CF6",
+                        secondary: "#A78BFA",
+                        accent: "#F43F5E",
+                        dark: "#1F2937",
+                        light: "#F9FAFB"
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .map-container {
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .wallet-card {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+        }
+        .transaction-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .ride-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <img src="https://picsum.photos/40?random=1" alt="FemCabs Logo" class="w-8 h-8 rounded-full">
+                    <span class="text-xl font-bold text-primary">FemCabs</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="text-gray-700 hover:text-primary transition-colors">Dashboard</a>
+                    <a href="#" class="text-gray-700 hover:text-primary transition-colors">Rides</a>
+                    <a href="#" class="text-gray-700 hover:text-primary transition-colors">Earnings</a>
+                    <a href="#" class="text-gray-700 hover:text-primary transition-colors">Support</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <img src="https://picsum.photos/40?random=2" alt="Driver Profile" class="w-8 h-8 rounded-full">
+                        <span class="hidden md:block text-sm font-medium">Sarah Johnson</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Stats & Wallet -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Welcome Card -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Welcome back, Sarah!</h2>
+                    <p class="text-gray-600 mb-4">You're currently online and ready for rides</p>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-green-600">Online</span>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-secondary transition-colors">
+                            Go Offline
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Earnings Stats -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Today's Earnings</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Completed Rides</p>
+                            <p class="text-2xl font-bold text-primary">8</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Total Earnings</p>
+                            <p class="text-2xl font-bold text-primary">$142.50</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wallet Card -->
+                <div class="wallet-card rounded-xl shadow-sm p-6 text-white">
+                    <h3 class="text-lg font-semibold mb-2">Driver Wallet</h3>
+                    <p class="text-3xl font-bold mb-4">$1,284.75</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm">Available Balance</span>
+                        <button class="bg-white text-primary px-3 py-1 rounded-full text-xs font-medium hover:bg-opacity-90 transition-colors">
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
+                    <div class="transaction-list space-y-3">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div>
+                                <p class="font-medium text-sm">Ride #2847</p>
+                                <p class="text-xs text-gray-500">2 hours ago</p>
+                            </div>
+                            <span class="text-green-600 font-semibold">+$18.50</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div>
+                                <p class="font-medium text-sm">Ride #2846</p>
+                                <p class="text-xs text-gray-500">3 hours ago</p>
+                            </div>
+                            <span class="text-green-600 font-semibold">+$22.75</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div>
+                                <p class="font-medium text-sm">Withdrawal</p>
+                                <p class="text-xs text-gray-500">Yesterday</p>
+                            </div>
+                            <span class="text-red-600 font-semibold">-$200.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column - Map & Active Ride -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Interactive Map -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Live Map</h3>
+                        <div class="flex space-x-2">
+                            <button class="bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                            <button class="bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-layer-group"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-container bg-gray-200 relative">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-map-marked-alt text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500">Live map integration would display here</p>
+                                <p class="text-sm text-gray-400 mt-2">Showing real-time ride requests and traffic</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Ride Card -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Current Ride</h3>
+                        <span class="ride-badge bg-primary text-white px-3 py-1 rounded-full text-sm">Active</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Pickup Location</p>
+                            <p class="font-medium">123 Main Street</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Destination</p>
+                            <p class="font-medium">456 Oak Avenue</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Estimated Fare</p>
+                            <p class="font-medium text-primary">$24.50</p>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button class="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary transition-colors">
+                            <i class="fas fa-check-circle mr-2"></i>Start Ride
+                        </button>
+                        <button class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-times-circle mr-2"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ride History -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Ride Requests</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium">0.8 miles away</p>
+                                <p class="text-sm text-gray-500">123 Market St → 456 Park Ave</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-primary">$12.75</p>
+                                <button class="bg-primary text-white px-3 py-1 rounded text-sm mt-1 hover:bg-secondary transition-colors">
+                                    Accept
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="font-medium">1.2 miles away</p>
+                                <p class="text-sm text-gray-500">789 Broadway → 321 Pine St</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-primary">$18.25</p>
+                                <button class="bg-primary text-white px-3 py-1 rounded text-sm mt-1 hover:bg-secondary transition-colors">
+                                    Accept
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">FemCabs</h4>
+                    <p class="text-gray-300">Safe rides for everyone by female drivers</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Driver Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Safety Guidelines</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Vehicle Requirements</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Earnings</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Payment Methods</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Tax Information</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Bonus Programs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                    <p class="text-gray-300">support@femcabs.com</p>
+                    <p class="text-gray-300">+1 (555) 123-4567</p>
+                    <div class="flex space-x-4 mt-3">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-300">
+                <p>&copy; 2024 FemCabs. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Driver Data
+        const driverData = {
+            "name": "Sarah Johnson",
+            "status": "online",
+            "totalEarnings": 1284.75,
+            "todayEarnings": 142.50,
+            "completedRides": 8,
+            "rating": 4.9,
+            "vehicle": "Toyota Camry 2022"
+        };
+
+        // Recent Transactions
+        const transactions = [
+            { "id": 2847, "type": "ride", "amount": 18.50, "time": "2 hours ago", "status": "completed" },
+            { "id": 2846, "type": "ride", "amount": 22.75, "time": "3 hours ago", "status": "completed" },
+            { "id": 2845, "type": "withdrawal", "amount": -200.00, "time": "Yesterday", "status": "processed" }
+        ];
+
+        // Active Ride
+        const activeRide = {
+            "pickup": "123 Main Street",
+            "destination": "456 Oak Avenue",
+            "estimatedFare": 24.50,
+            "distance": "2.3 miles",
+            "duration": "15 min"
+        };
+
+        // Ride Requests
+        const rideRequests = [
+            { "distance": "0.8 miles", "pickup": "123 Market St", "dropoff": "456 Park Ave", "fare": 12.75 },
+            { "distance": "1.2 miles", "pickup": "789 Broadway", "dropoff": "321 Pine St", "fare": 18.25 }
+        ];
+
+        // Wallet Functions
+        function updateWalletBalance(amount) {
+            const walletElement = document.querySelector('.wallet-card p.text-3xl');
+            const currentBalance = parseFloat(walletElement.textContent.replace('$', ''));
+            const newBalance = currentBalance + amount;
+            walletElement.textContent = '$' + newBalance.toFixed(2);
+            
+            // Add to transaction history
+            addTransaction(amount > 0 ? 'ride' : 'withdrawal', amount, 'Just now');
+        }
+
+        function addTransaction(type, amount, time) {
+            const transactionList = document.querySelector('.transaction-list');
+            const transactionDiv = document.createElement('div');
+            transactionDiv.className = 'flex justify-between items-center py-2 border-b border-gray-100';
+            transactionDiv.innerHTML = `
+                <div>
+                    <p class="font-medium text-sm">${type === 'ride' ? 'Ride #' + (2847 + Math.floor(Math.random() * 10)) : 'Withdrawal'}</p>
+                    <p class="text-xs text-gray-500">${time}</p>
+                </div>
+                <span class="${amount > 0 ? 'text-green-600' : 'text-red-600'} font-semibold">${amount > 0 ? '+' : ''}$${Math.abs(amount).toFixed(2)}</span>
+            `;
+            transactionList.prepend(transactionDiv);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate ride completion and payment
+            const acceptButtons = document.querySelectorAll('button:contains("Accept")');
+            acceptButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const fare = parseFloat(this.previousElementSibling.textContent.replace('$', ''));
+                    updateWalletBalance(fare);
+                    
+                    // Update today's earnings
+                    const todayEarnings = document.querySelector('.bg-gray-50:nth-child(2) p.text-2xl');
+                    const current = parseFloat(todayEarnings.textContent.replace('$', ''));
+                    todayEarnings.textContent = '$' + (current + fare).toFixed(2);
+                    
+                    // Update completed rides
+                    const completedRides = document.querySelector('.bg-gray-50:first-child p.text-2xl');
+                    completedRides.textContent = parseInt(completedRides.textContent) + 1;
+                    
+                    // Remove the ride request
+                    this.closest('.flex.items-center.justify-between').remove();
+                });
+            });
+
+            // Start ride button
+            const startRideBtn = document.querySelector('button:contains("Start Ride")');
+            startRideBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const fare = 24.50; // From active ride
+                setTimeout(() => {
+                    updateWalletBalance(fare);
+                    alert('Ride completed! $24.50 added to your wallet.');
+                }, 5000); // Simulate 5 second ride
+            });
+
+            // Withdrawal button
+            const withdrawBtn = document.querySelector('button:contains("Withdraw")');
+            withdrawBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const amount = parseFloat(prompt('Enter withdrawal amount:'));
+                if (amount && amount > 0) {
+                    updateWalletBalance(-amount);
+                    alert('Withdrawal request submitted. Funds will be processed within 24 hours.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
