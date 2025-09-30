@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab A Rose - VIP Motorcycle Service with SI</title>
+    <meta name="description" content="Premium VIP motorcycle ride-hailing service with Synthetic Intelligence and real-time tracking">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#e11d48",
+                        secondary: "#1e293b",
+                        accent: "#f43f5e",
+                        light: "#f8fafc",
+                        dark: "#0f172a",
+                        ai: "#8b5cf6"
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .map-container {
+            background: linear-gradient(135deg, #e2e8f0 25%, #cbd5e1 25%, #cbd5e1 50%, #e2e8f0 50%, #e2e8f0 75%, #cbd5e1 75%, #cbd5e1 100%);
+            background-size: 40px 40px;
+        }
+        .driver-marker {
+            transition: all 0.5s ease;
+        }
+        .ride-progress {
+            transition: width 1.5s ease-in-out;
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
+        }
+        .ai-pulse {
+            animation: aiPulse 3s infinite;
+        }
+        @keyframes aiPulse {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        .learning-bar {
+            transition: width 2s ease-in-out;
+        }
+        .notification-badge {
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-primary">Grab A <span class="text-secondary">Rose</span></h1>
+                    <span class="ml-2 bg-ai text-white text-xs px-2 py-1 rounded-full flex items-center">
+                        <i class="fas fa-brain mr-1"></i> SI Enabled
+                    </span>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#" class="text-secondary hover:text-primary font-medium">Home</a>
+                    <a href="#" class="text-secondary hover:text-primary font-medium">Rides</a>
+                    <a href="#" class="text-secondary hover:text-primary font-medium">Wallet</a>
+                    <a href="#" class="text-secondary hover:text-primary font-medium">SI Dashboard</a>
+                    <a href="#" class="text-secondary hover:text-primary font-medium">Support</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center bg-light rounded-full py-1 px-3">
+                        <i class="fas fa-coins text-yellow-500 mr-2"></i>
+                        <span class="font-medium">$<span id="balance-amount">125.50</span></span>
+                    </div>
+                    
+                    <div class="relative">
+                        <button class="bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <span class="absolute -top-1 -right-1 bg-accent text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">3</span>
+                    </div>
+                    
+                    <button id="role-toggle" class="bg-secondary text-white text-sm px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-exchange-alt mr-2"></i>
+                        <span>Switch to Driver</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- SI Status Bar -->
+        <div class="bg-gradient-to-r from-ai to-purple-500 text-white rounded-xl p-4 mb-8 flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="bg-white bg-opacity-20 rounded-full p-2 mr-3 ai-pulse">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold">Synthetic Intelligence Active</h3>
+                    <p class="text-sm opacity-80">Optimizing routes, pricing, and matching in real-time</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="text-center">
+                    <div class="text-lg font-bold">97%</div>
+                    <div class="text-xs opacity-80">Accuracy</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-bold">243</div>
+                    <div class="text-xs opacity-80">Tasks Automated</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-bold">12.4%</div>
+                    <div class="text-xs opacity-80">Efficiency Gain</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-secondary">Welcome, <span id="user-name">Michael</span></h2>
+                <p class="text-gray-600">Your SI assistant has optimized 3 routes for you today</p>
+            </div>
+            
+            <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                <div class="bg-white shadow rounded-lg p-4 flex items-center">
+                    <div class="bg-green-100 rounded-full p-3 mr-3">
+                        <i class="fas fa-star text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Rating</p>
+                        <p class="font-bold">4.92 <span class="text-gray-400">/5</span></p>
+                    </div>
+                </div>
+                
+                <div class="bg-white shadow rounded-lg p-4 flex items-center">
+                    <div class="bg-blue-100 rounded-full p-3 mr-3">
+                        <i class="fas fa-motorcycle text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Rides</p>
+                        <p class="font-bold">47</p>
+                    </div>
+                </div>
+
+                <div class="bg-white shadow rounded-lg p-4 flex items-center">
+                    <div class="bg-ai bg-opacity-20 rounded-full p-3 mr-3">
+                        <i class="fas fa-brain text-ai"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">SI Score</p>
+                        <p class="font-bold">87%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Booking & Map -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Booking Card with SI Optimization -->
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-secondary">Book a VIP Ride</h3>
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                            <i class="fas fa-bolt mr-1"></i> SI Optimized
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
+                            <div class="relative">
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter pickup location" value="Downtown Cafe">
+                                <button class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-location-arrow"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                            <div class="relative">
+                                <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" placeholder="Enter destination" value="Central Park">
+                                <button class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SI Recommendation -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 rounded-full p-2 mr-3">
+                                <i class="fas fa-lightbulb text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-blue-800">SI Recommendation</h4>
+                                <p class="text-sm text-blue-600">Based on traffic patterns, your optimal ride is the Premium option saving 7 minutes and $3.50 compared to VIP</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Select Motorcycle Type</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="border-2 border-gray-200 rounded-lg p-3 text-center cursor-pointer hover:border-primary transition">
+                                <i class="fas fa-motorcycle text-2xl text-gray-600 mb-2"></i>
+                                <p class="font-medium">Standard</p>
+                                <p class="text-xs text-gray-500">$12-15</p>
+                            </div>
+                            <div class="border-2 border-primary rounded-lg p-3 text-center cursor-pointer bg-primary/5 relative">
+                                <span class="absolute -top-2 -right-2 bg-ai text-white text-xs px-2 py-1 rounded-full">AI Pick</span>
+                                <i class="fas fa-motorcycle text-2xl text-primary mb-2"></i>
+                                <p class="font-medium">Premium</p>
+                                <p class="text-xs text-gray-500">$18-22</p>
+                            </div>
+                            <div class="border-2 border-gray-200 rounded-lg p-3 text-center cursor-pointer hover:border-primary transition">
+                                <i class="fas fa-crown text-2xl text-yellow-500 mb-2"></i>
+                                <p class="font-medium">VIP</p>
+                                <p class="text-xs text-gray-500">$25-30</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition flex items-center justify-center">
+                        <i class="fas fa-motorcycle mr-2"></i>
+                        Book Premium Ride (SI Recommended)
+                    </button>
+                </div>
+                
+                <!-- Map Container with SI Data -->
+                <div class="bg-white shadow-lg rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-secondary">Live Tracking with SI Optimization</h3>
+                        <span class="bg-ai text-white text-xs px-2 py-1 rounded-full">Real-time AI Routing</span>
+                    </div>
+                    <div class="map-container h-96 relative">
+                        <!-- Simulated Map -->
+                        <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="fas fa-map-marked-alt text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500">Live map with AI optimization...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Driver Marker -->
+                        <div class="driver-marker absolute top-1/2 left-1/4 bg-primary text-white p-2 rounded-full shadow-lg">
+                            <i class="fas fa-motorcycle"></i>
+                        </div>
+                        
+                        <!-- User Marker -->
+                        <div class="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-accent text-white p-2 rounded-full shadow-lg pulse">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        
+                        <!-- Destination Marker -->
+                        <div class="absolute top-1/3 right-1/4 bg-green-500 text-white p-2 rounded-full shadow-lg">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        
+                        <!-- SI Optimization Path -->
+                        <div class="absolute top-1/2 left-1/4 w-1/2 h-1 border-b-2 border-dashed border-ai" style="transform: rotate(-30deg); transform-origin: left center;"></div>
+                    </div>
+                    
+                    <div class="p-4 bg-gray-50 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500">SI Optimized arrival</p>
+                            <p class="font-semibold"><span id="eta-time">7</span> minutes <span class="text-green-600 text-sm">(3 min faster)</span></p>
+                        </div>
+                        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">
+                            <i class="fas fa-share-alt mr-1"></i> Share Status
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SI Learning Progress -->
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <h3 class="text-xl font-semibold text-secondary mb-4">SI Learning Progress</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-700 mb-1">
+                                <span>Route Optimization</span>
+                                <span>87%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="learning-bar bg-ai h-2 rounded-full" style="width: 87%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-700 mb-1">
+                                <span>Pricing Algorithm</span>
+                                <span>92%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="learning-bar bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-700 mb-1">
+                                <span>Driver-Rider Matching</span>
+                                <span>78%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="learning-bar bg-blue-500 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="bg-ai bg-opacity-20 rounded-full p-2 mr-3">
+                                <i class="fas fa-robot text-ai"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Continuous Learning Active</h4>
+                                <p class="text-sm text-gray-600">The SI system improves with each ride, optimizing for efficiency and user satisfaction</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Wallet, Activity & SI Features -->
+            <div class="space-y-6">
+                <!-- Wallet Card with AI Projections -->
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-secondary">My Wallet</h3>
+                        <button class="text-primary hover:text-accent">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-primary to-accent rounded-xl p-6 text-white mb-6">
+                        <p class="text-sm opacity-80">Current Balance</p>
+                        <p class="text-3xl font-bold mt-1">$<span id="wallet-balance">125.50</span></p>
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm">**** **** **** 4293</span>
+                            <i class="far fa-credit-card text-xl"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Spending Projection -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 rounded-full p-1 mr-2">
+                                <i class="fas fa-chart-line text-purple-600 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-purple-800"><span class="font-medium">SI Projection:</span> Your current balance will last for ~12 rides</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-light hover:bg-gray-100 py-3 rounded-lg font-medium flex items-center justify-center">
+                            <i class="fas fa-plus-circle mr-2 text-primary"></i> Add Money
+                        </button>
+                        <button class="bg-light hover:bg-gray-100 py-3 rounded-lg font-medium flex items-center justify-center">
+                            <i class="fas fa-exchange-alt mr-2 text-primary"></i> Transfer
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity with SI Insights -->
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-secondary">Recent Activity</h3>
+                        <button class="text-primary hover:text-accent text-sm font-medium">
+                            View All
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 rounded-full p-3 mr-4">
+                                <i class="fas fa-dollar-sign text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Ride Payment</p>
+                                <p class="text-sm text-gray-500">Today, 10:24 AM</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-red-600">-$22.50</p>
+                                <p class="text-sm text-gray-500">SI Optimized</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 rounded-full p-3 mr-4">
+                                <i class="fas fa-wallet text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Wallet Top-up</p>
+                                <p class="text-sm text-gray-500">Yesterday, 4:36 PM</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-600">+$50.00</p>
+                                <p class="text-sm text-gray-500">Completed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="bg-ai bg-opacity-20 rounded-full p-3 mr-4">
+                                <i class="fas fa-brain text-ai"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">SI Efficiency Bonus</p>
+                                <p class="text-sm text-gray-500">Oct 23, 2023</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-600">+$5.25</p>
+                                <p class="text-sm text-gray-500">Reward</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SI Agent Integration -->
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-secondary">AI Agents</h3>
+                        <span class="bg-ai text-white text-xs px-2 py-1 rounded-full">Active</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <div class="bg-blue-100 rounded-full p-2 mr-3">
+                                <i class="fas fa-route text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Route Optimization Agent</p>
+                                <p class="text-xs text-gray-500">Real-time traffic analysis</p>
+                            </div>
+                            <div class="h-3 w-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <div class="bg-green-100 rounded-full p-2 mr-3">
+                                <i class="fas fa-money-bill-wave text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Pricing Agent</p>
+                                <p class="text-xs text-gray-500">Dynamic fare calculation</p>
+                            </div>
+                            <div class="h-3 w-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <div class="bg-purple-100 rounded-full p-2 mr-3">
+                                <i class="fas fa-handshake text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Matching Agent</p>
+                                <p class="text-xs text-gray-500">Driver-rider compatibility</p>
+                            </div>
+                            <div class="h-3 w-3 bg-green-500 rounded-full"></div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-light hover:bg-gray-100 text-secondary py-3 rounded-lg font-semibold mt-4 flex items-center justify-center">
+                        <i class="fas fa-cog mr-2"></i> Manage AI Agents
+                    </button>
+                </div>
+                
+                <!-- Driver Mode Card with SI Assistance -->
+                <div id="driver-card" class="bg-white shadow-lg rounded-xl p-6 hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-secondary">Driver Mode</h3>
+                        <div class="relative inline-block w-12 h-6 rounded-full bg-gray-300">
+                            <input type="checkbox" class="absolute opacity-0 w-0 h-0 peer">
+                            <span class="absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition duration-300 peer-checked:bg-primary"></span>
+                            <span class="absolute h-4 w-4 top-1 left-1 bg-white rounded-full transition duration-300 peer-checked:translate-x-6"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center py-4">
+                        <div class="bg-light rounded-xl p-4 inline-flex items-center justify-center mb-4">
+                            <i class="fas fa-motorcycle text-3xl text-primary"></i>
+                        </div>
+                        <p class="font-medium">You're currently offline</p>
+                        <p class="text-sm text-gray-500 mt-1">SI can increase your earnings by 23% when online</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-xl p-4 mt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-gray-600">Today's earnings</p>
+                            <p class="font-semibold">$0.00</p>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <p class="text-gray-600">SI Optimization Score</p>
+                            <p class="font-semibold">-</p>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-light hover:bg-gray-100 text-secondary py-3 rounded-lg font-semibold mt-4">
+                        <i class="fas fa-brain mr-2"></i> View SI Earnings Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SI Notification Panel -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <div class="bg-white shadow-xl rounded-lg w-80 overflow-hidden">
+            <div class="bg-ai text-white p-3 flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-robot mr-2"></i>
+                    <span class="font-medium">SI Assistant</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="h-2 w-2 bg-green-400 rounded-full mr-1"></span>
+                    <span class="text-xs">Online</span>
+                </div>
+            </div>
+            
+            <div class="p-3 max-h-80 overflow-y-auto">
+                <div class="flex mb-3">
+                    <div class="bg-gray-100 rounded-lg p-2 mr-2">
+                        <i class="fas fa-robot text-ai"></i>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 flex-1">
+                        <p class="text-sm">Hello Michael! I've optimized your route to save 7 minutes based on current traffic patterns. Would you like me to proceed with booking?</p>
+                        <p class="text-xs text-gray-500 mt-1">Just now</p>
+                    </div>
+                </div>
+                
+                <div class="flex mb-3">
+                    <div class="bg-gray-100 rounded-lg p-2 mr-2">
+                        <i class="fas fa-robot text-ai"></i>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 flex-1">
+                        <p class="text-sm">I've detected a faster route that will save you 3 minutes. Rerouting now.</p>
+                        <p class="text-xs text-gray-500 mt-1">2 min ago</p>
+                    </div>
+                </div>
+                
+                <div class="flex">
+                    <div class="bg-gray-100 rounded-lg p-2 mr-2">
+                        <i class="fas fa-robot text-ai"></i>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 flex-1">
+                        <p class="text-sm">Your ride history shows a preference for premium service during evening hours. Would you like to set this as your default?</p>
+                        <p class="text-xs text-gray-500 mt-1">5 min ago</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 p-3">
+                <div class="flex items-center">
+                    <input type="text" placeholder="Type your message..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ai">
+                    <button class="ml-2 bg-ai text-white rounded-lg p-2">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ride in Progress Modal with SI Features -->
+    <div id="ride-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-40">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-secondary">Ride in Progress</h3>
+                <span class="bg-ai text-white text-xs px-2 py-1 rounded-full">SI Optimized</span>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex items-center mb-6">
+                    <img src="https://picsum.photos/80?random=3" alt="Driver" class="w-16 h-16 rounded-full mr-4">
+                    <div>
+                        <p class="font-semibold">James Rodriguez</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>4.9 (128 reviews)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light rounded-xl p-4 mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-gray-600">Vehicle</p>
+                        <p class="font-semibold">Yamaha MT-09</p>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-gray-600">License Plate</p>
+                        <p class="font-semibold">MTC 4293</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-gray-600">SI ETA</p>
+                        <p class="font-semibold"><span id="modal-eta">7</span> min <span class="text-green-600 text-sm">(optimized)</span></p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Pickup: Downtown Cafe</span>
+                        <span>2.1 mi</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="ride-progress bg-primary h-full" style="width: 30%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 mt-1">
+                        <span>Destination: Central Park</span>
+                        <span>4.7 mi</span>
+                    </div>
+                </div>
+                
+                <!-- SI Optimization Details -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 rounded-full p-1 mr-2">
+                            <i class="fas fa-bolt text-blue-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-blue-800"><span class="font-medium">SI Update:</span> Route optimized to avoid congestion on 5th Ave</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button class="flex-1 bg-light hover:bg-gray-100 text-secondary py-3 rounded-lg font-semibold">
+                        <i class="fas fa-phone-alt mr-1"></i> Call
+                    </button>
+                    <button class="flex-1 bg-light hover:bg-gray-100 text-secondary py-3 rounded-lg font-semibold">
+                        <i class="fas fa-comment mr-1"></i> Message
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-b-xl">
+                <button class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-accent transition">
+                    <i class="fas fa-robot mr-2"></i> Request SI Assistance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-secondary text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h2 class="text-2xl font-bold mb-4">Grab A <span class="text-primary">Rose</span></h2>
+                    <p class="text-gray-400">Premium VIP motorcycle ride-hailing service powered by Synthetic Intelligence.</p>
+                    <div class="flex items-center mt-3">
+                        <div class="h-3 w-3 bg-green-500 rounded-full mr-2"></div>
+                        <p class="text-sm text-gray-400">SI Systems Operational</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Services</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">VIP Rides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Priority Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Corporate Accounts</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">SI Optimization</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">AI Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">SI Technology</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy & Security</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Developer Portal</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Download App</h3>
+                    <div class="flex space-x-2">
+                        <button class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center">
+                            <i class="fab fa-apple mr-2"></i> App Store
+                        </button>
+                        <button class="bg-black hover:bg-gray-800 text-white py-2 px-4 rounded flex items-center">
+                            <i class="fab fa-google-play mr-2"></i> Play Store
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-400">Experience our AI-powered ride optimization</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400">© 2023 Grab A Rose. All rights reserved. Powered by Synthetic Intelligence.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-github"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Enhanced App State Management with SI Integration
+        const appState = {
+            user: {
+                name: "Michael",
+                balance: 125.50,
+                rating: 4.92,
+                rides: 47,
+                siScore: 87
+            },
+            driver: {
+                isOnline: false,
+                earnings: 0,
+                acceptanceRate: 0,
+                siOptimization: 0
+            },
+            currentRide: null,
+            isDriverMode: false,
+            siSystem: {
+                status: "active",
+                learningProgress: {
+                    routeOptimization: 87,
+                    pricingAlgorithm: 92,
+                    matching: 78
+                },
+                agents: {
+                    route: { status: "online", active: true },
+                    pricing: { status: "online", active: true },
+                    matching: { status: "online", active: true }
+                },
+                notifications: [
+                    { 
+                        id: 1, 
+                        message: "Hello Michael! I've optimized your route to save 7 minutes based on current traffic patterns. Would you like me to proceed with booking?", 
+                        timestamp: "Just now",
+                        read: false
+                    },
+                    { 
+                        id: 2, 
+                        message: "I've detected a faster route that will save you 3 minutes. Rerouting now.", 
+                        timestamp: "2 min ago",
+                        read: false
+                    },
+                    { 
+                        id: 3, 
+                        message: "Your ride history shows a preference for premium service during evening hours. Would you like to set this as your default?", 
+                        timestamp: "5 min ago",
+                        read: false
+                    }
+                ]
+            }
+        };
+
+        // DOM Elements
+        const roleToggle = document.getElementById('role-toggle');
+        const driverCard = document.getElementById('driver-card');
+        const rideModal = document.getElementById('ride-modal');
+        const walletBalance = document.getElementById('wallet-balance');
+        const balanceAmount = document.getElementById('balance-amount');
+        const userName = document.getElementById('user-name');
+        const etaTime = document.getElementById('eta-time');
+        const modalEta = document.getElementById('modal-eta');
+
+        // Initialize the app
+        function initApp() {
+            updateUI();
+            simulateRealTimeUpdates();
+            simulateSILearning();
+        }
+
+        // Update UI based on state
+        function updateUI() {
+            walletBalance.textContent = appState.user.balance.toFixed(2);
+            balanceAmount.textContent = appState.user.balance.toFixed(2);
+            userName.textContent = appState.user.name;
+            
+            if (appState.isDriverMode) {
+                roleToggle.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i> Switch to Rider';
+                driverCard.classList.remove('hidden');
+            } else {
+                roleToggle.innerHTML = '<i class="fas fa-exchange-alt mr-2"></i> Switch to Driver';
+                driverCard.classList.add('hidden');
+            }
+            
+            if (appState.currentRide) {
+                rideModal.classList.remove('hidden');
+            } else {
+                rideModal.classList.add('hidden');
+            }
+            
+            // Update SI learning progress bars
+            document.querySelector('.learning-bar:nth-child(1)').style.width = `${appState.siSystem.learningProgress.routeOptimization}%`;
+            document.querySelector('.learning-bar:nth-child(2)').style.width = `${appState.siSystem.learningProgress.pricingAlgorithm}%`;
+            document.querySelector('.learning-bar:nth-child(3)').style.width = `${appState.siSystem.learningProgress.matching}%`;
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            // Simulate driver movement on map
+            const driverMarker = document.querySelector('.driver-marker');
+            let position = 25;
+            setInterval(() => {
+                if (appState.currentRide) {
+                    position += 0.5;
+                    if (position > 75) position = 25;
+                    driverMarker.style.left = `${position}%`;
+                    
+                    // Update ETA
+                    const eta = Math.max(1, Math.floor(7 - (position - 25) / 10));
+                    etaTime.textContent = eta;
+                    modalEta.textContent = eta;
+                    
+                    // Update progress bar
+                    const progress = document.querySelector('.ride-progress');
+                    const progressWidth = 30 + (position - 25) / 50 * 70;
+                    progress.style.width = `${progressWidth}%`;
+                }
+            }, 1500);
+            
+            // Simulate balance updates
+            setInterval(() => {
+                if (appState.currentRide) {
+                    // Simulate ride completion and payment
+                    appState.user.balance -= 0.1;
+                    if (appState.user.balance < 0) {
+                        appState.currentRide = null;
+                        appState.user.balance = 50; // Reset balance
+                    }
+                    updateUI();
+                }
+            }, 3000);
+        }
+
+        // Simulate SI Learning
+        function simulateSILearning() {
+            setInterval(() => {
+                // Gradually improve learning metrics
+                if (appState.siSystem.learningProgress.routeOptimization < 95) {
+                    appState.siSystem.learningProgress.routeOptimization += 0.1;
+                }
+                if (appState.siSystem.learningProgress.pricingAlgorithm < 97) {
+                    appState.siSystem.learningProgress.pricingAlgorithm += 0.05;
+                }
+                if (appState.siSystem.learningProgress.matching < 90) {
+                    appState.siSystem.learningProgress.matching += 0.08;
+                }
+                
+                updateUI();
+            }, 5000);
+        }
+
+        // Event Listeners
+        roleToggle.addEventListener('click', () => {
+            appState.isDriverMode = !appState.isDriverMode;
+            updateUI();
+        });
+
+        // Simulate booking a ride
+        document.querySelector('.bg-primary button').addEventListener('click', () => {
+            appState.currentRide = {
+                driver: {
+                    name: "James Rodriguez",
+                    rating: 4.9,
+                    vehicle: "Yamaha MT-09",
+                    license: "MTC 4293"
+                },
+                pickup: "Downtown Cafe",
+                destination: "Central Park",
+                distance: "4.7 mi",
+                eta: 7
+            };
+            
+            // Add SI notification
+            appState.siSystem.notifications.unshift({
+                id: Date.now(),
+                message: "Your ride has been booked with SI optimization. Estimated savings: $3.50 and 7 minutes.",
+                timestamp: "Just now",
+                read: false
+            });
+            
+            updateUI();
+        });
+
+        // Initialize the app
+        initApp();
+    </script>
+</body>
+</html>
