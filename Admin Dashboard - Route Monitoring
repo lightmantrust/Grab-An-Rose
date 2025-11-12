@@ -1,0 +1,128 @@
+// apps/admin/src/components/RouteMonitoring.tsx
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { MapPin, AlertTriangle, CheckCircle } from 'lucide-react';
+
+interface RouteDeviation {
+  rideId: string;
+  driverName: string;
+  deviationPercentage: number;
+  status: 'pending' | 'reviewed' | 'resolved';
+  reportedReason?: string;
+  timestamp: string;
+}
+
+export default function RouteMonitoring() {
+  const [deviations, setDeviations] = useState<RouteDeviation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRouteDeviations();
+  }, []);
+
+  const fetchRouteDeviations = async () => {
+    try {
+      const response = await fetch('/api/admin/route-deviations');
+      const data = await response.json();
+      setDeviations(data);
+    } catch (error) {
+      console.error('Failed to fetch route deviations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resolveDeviation = async (rideId: string) => {
+    try {
+      await fetch(`/api/admin/route-deviations/${rideId}/resolve`, {
+        method: 'POST'
+      });
+      
+      // Refresh the list
+      fetchRouteDeviations();
+    } catch (error) {
+      console.error('Failed to resolve deviation:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Loading route deviations...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Route Integrity Monitoring</h2>
+          <p className="text-gray-500">Monitor and resolve route deviations</p>
+        </div>
+        <Badge variant={deviations.length > 0 ? "destructive" : "secondary"}>
+          {deviations.length} Active Deviations
+        </Badge>
+      </div>
+
+      {deviations.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-8">
+            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+            <h3 className="text-lg font-medium">No Route Deviations</h3>
+            <p className="text-gray-500 text-center mt-2">
+              All routes are following the planned paths
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {deviations.map((deviation) => (
+            <Card key={deviation.rideId}>
+              <CardHeader>
+                <div className="flex justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5" />
+                      Ride {deviation.rideId}
+                    </CardTitle>
+                    <CardDescription>
+                      Driver: {deviation.driverName} • {new Date(deviation.timestamp).toLocaleString()}
+                    </CardDescription>
+                  </div>
+                  <Badge variant={deviation.status === 'resolved' ? 'default' : 'destructive'}>
+                    {deviation.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Deviation</h4>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      <span className="text-lg font-bold">{deviation.deviationPercentage.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Reported Reason</h4>
+                    <p className="text-sm">
+                      {deviation.reportedReason || 'No reason reported'}
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-end items-center">
+                    {deviation.status !== 'resolved' && (
+                      <Button onClick={() => resolveDeviation(deviation.rideId)}>
+                        Mark as Resolved
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
