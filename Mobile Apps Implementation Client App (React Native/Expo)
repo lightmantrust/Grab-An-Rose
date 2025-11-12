@@ -1,0 +1,33 @@
+// apps/client/src/components/CinematicHUD.tsx
+import { SpinePlayer } from 'spine-react-native';
+import { Rive } from 'rive-react-native';
+import { GLView } from 'expo-gl';
+import { useAnimatedValue, withSpring } from 'react-native-reanimated';
+
+export default function CinematicHUD() {
+  const spring = useAnimatedValue(0);
+  
+  return (
+    <>
+      <SpinePlayer 
+        skeleton="phoenix" 
+        animation="fly" 
+        loop={true}
+      />
+      <Rive 
+        src="fire_trail.riv" 
+        stateMachine="speed" 
+      />
+      <GLView>
+        <Particles 
+          type="rose" 
+          follow={driverPos} 
+          count={1000}
+        />
+      </GLView>
+      <Reanimated.View 
+        style={[styles.hud, { transform: [{ scale: spring }] }]}
+      />
+    </>
+  );
+}
