@@ -1,0 +1,119 @@
+// services/ride/src/routeIntegrity.ts
+import { haversineDistance } from './utils/geo';
+import { getTrafficData } from './trafficService';
+
+export class RouteIntegrityMonitor {
+  // Check for route deviations
+  async checkRouteIntegrity(rideId: string) {
+    const ride = rideManager.getRide(rideId);
+    if (!ride || ride.status !== 'active') return;
+    
+    // Get planned route vs actual route
+    const plannedRoute = ride.plannedRoute;
+    const actualRoute = ride.routeHistory;
+    
+    // Calculate deviation percentage
+    const deviation = this.calculateDeviation(plannedRoute, actualRoute);
+    
+    // If significant deviation detected
+    if (deviation.percentage > 15) {
+      // Check if there's a reported rerouting event
+      const hasReportedReroute = ride.reroutingEvents.length > 0;
+      
+      if (!hasReportedReroute) {
+        // Flag for review
+        await this.flagForReview(rideId, deviation);
+        
+        // Notify driver to report reason
+        emitToUser(ride.driver.id, 'route:deviation_detected', {
+          rideId,
+          deviation: deviation.percentage,
+          message: 'Please report reason for route change'
+        });
+      }
+    }
+  }
+  
+  // Calculate route deviation
+  private calculateDeviation(planned: GeoLocation[], actual: GeoLocation[]): DeviationResult {
+    const plannedDistance = this.calculateTotalDistance(planned);
+    const actualDistance = this.calculateTotalDistance(actual);
+    
+    const percentage = ((actualDistance - plannedDistance) / plannedDistance) * 100;
+    
+    return {
+      percentage,
+      plannedDistance,
+      actualDistance,
+      extraDistance: actualDistance - plannedDistance
+    };
+  }
+  
+  // Handle rerouting report from driver
+  async reportRerouting(rideId: string, reason: RerouteReason, details: string) {
+    const ride = rideManager.getRide(rideId);
+    if (!ride) return;
+    
+    // Validate rerouting reason
+    const isValidReason = await this.validateRerouteReason(reason, ride.currentLocation);
+    
+    if (isValidReason) {
+      // Calculate extra distance
+      const extraDistance = this.calculateExtraDistance(ride);
+      
+      // Add rerouting event
+      ride.reroutingEvents.push({
+        reason,
+        details,
+        extraDistance,
+        timestamp: new Date(),
+        approved: true
+      });
+      
+      // Notify customer
+      emitToUser(ride.customer.id, 'route:rerouted', {
+        rideId,
+        reason,
+        message: `Driver rerouting due to: ${reason}`
+      });
+      
+      // Schedule bonus token distribution
+      await this.scheduleBonusTokens(rideId);
+      
+    } else {
+      // Reject rerouting report
+      emitToUser(ride.driver.id, 'route:reroute_rejected', {
+        rideId,
+        message: 'Rerouting reason not valid'
+      });
+    }
+  }
+  
+  // Validate rerouting reason
+  private async validateRerouteReason(reason: RerouteReason, location: GeoLocation): Promise<boolean> {
+    switch (reason) {
+      case 'road_works':
+        return await this.checkRoadWorks(location);
+      case 'safety_concern':
+        return await this.checkSafetyConcerns(location);
+      case 'traffic':
+        return await this.checkTrafficConditions(location);
+      case 'no_go_zone':
+        return await this.checkNoGoZone(location);
+      default:
+        return false;
+    }
+  }
+  
+  // Schedule bonus token distribution
+  private async scheduleBonusTokens(rideId: string) {
+    // Will be triggered when ride is completed
+    const ride = rideManager.getRide(rideId);
+    if (!ride) return;
+    
+    ride.pendingBonusTokens = {
+      driver: 5,  // 5 ROSE tokens
+      customer: 5 // 5 ROSE tokens
+    };
+  }
+}
