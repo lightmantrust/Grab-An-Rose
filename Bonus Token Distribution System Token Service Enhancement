@@ -1,0 +1,78 @@
+// services/token/src/bonusDistribution.ts
+import { mintRose } from './minting';
+import { transferRose } from './transfers';
+
+export class BonusDistributionService {
+  // Distribute bonus tokens for rerouting
+  async distributeReroutingBonus(rideId: string) {
+    const ride = await rideService.getRide(rideId);
+    if (!ride || !ride.pendingBonusTokens) return;
+    
+    const { driver, customer } = ride;
+    const bonusAmount = ride.pendingBonusTokens;
+    
+    try {
+      // Mint tokens to driver
+      const driverMintTx = await mintRose(driver.id, bonusAmount.driver);
+      
+      // Mint tokens to customer
+      const customerMintTx = await mintRose(customer.id, bonusAmount.customer);
+      
+      // Record transactions
+      await this.recordBonusDistribution({
+        rideId,
+        driverId: driver.id,
+        customerId: customer.id,
+        driverAmount: bonusAmount.driver,
+        customerAmount: bonusAmount.customer,
+        driverTx: driverMintTx,
+        customerTx: customerMintTx,
+        reason: 'rerouting_compensation'
+      });
+      
+      // Notify both parties
+      emitToUser(driver.id, 'tokens:bonus_received', {
+        amount: bonusAmount.driver,
+        reason: 'Rerouting compensation'
+      });
+      
+      emitToUser(customer.id, 'tokens:bonus_received', {
+        amount: bonusAmount.customer,
+        reason: 'Rerouting compensation'
+      });
+      
+      // Clear pending bonus
+      ride.pendingBonusTokens = null;
+      await rideService.updateRide(rideId, ride);
+      
+    } catch (error) {
+      console.error('Bonus distribution failed:', error);
+    }
+  }
+  
+  // Distribute bonus tokens for SOS response
+  async distributeSOSBonus(driverId: string, sosId: string) {
+    try {
+      // Mint 20 ROSE tokens to responding driver
+      const mintTx = await mintRose(driverId, 20);
+      
+      // Record transaction
+      await this.recordBonusDistribution({
+        sosId,
+        driverId,
+        driverAmount: 20,
+        driverTx: mintTx,
+        reason: 'sos_response'
+      });
+      
+      // Notify driver
+      emitToUser(driverId, 'tokens:bonus_received', {
+        amount: 20,
+        reason: 'SOS response'
+      });
+      
+    } catch (error) {
+      console.error('SOS bonus distribution failed:', error);
+    }
+  }
+}
