@@ -1,0 +1,31 @@
+// services/ride/src/index.ts
+import { Server } from 'socket.io';
+import { KDTree } from 'kdtreejs';
+import { Redis } from 'ioredis';
+
+const io = new Server();
+const redis = new Redis();
+const kdTree = new KDTree([], (a, b) => Math.hypot(a.lat - b.lat, a.lng - b.lng));
+
+io.on('connection', (socket) => {
+  // Driver location updates
+  socket.on('driver:update', (loc) => {
+    redis.geoadd('drivers', loc.lng, loc.lat, socket.id);
+    kdTree.insert(loc);
+  });
+
+  // Ride request
+  socket.on('ride:request', async ({ lat, lng, vip }) => {
+    const driver = kdTree.nearest({ lat, lng }, 1)[0];
+    const price = await ml.predict({ dist: driver.dist, vip });
+    const xrp = price / 148; // PHP → XRP
+
+    io.to(driver.id).emit('offer', { price, xrp });
+  });
+
+  // Ride acceptance
+  socket.on('ride:accept', async ({ driverId, amountPHP }) => {
+    const tx = await xrpl.submitPayment(platformWallet, driverWallet, amountPHP / 148);
+    mintRose(driverId, 3);
+  });
+});
