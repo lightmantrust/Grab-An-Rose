@@ -1,0 +1,41 @@
+# infra/terraform/main.tf
+resource "aws_eks_cluster" "rose" {
+  name     = "grab-a-rose-prod"
+  role_arn = aws_iam_role.rose.arn
+  
+  vpc_config {
+    subnet_ids = aws_subnet.rose[*].id
+  }
+  
+  scaling_config {
+    desired_size = 10
+    max_size     = 100
+    min_size     = 5
+  }
+}
+
+resource "kubernetes_deployment" "ride_service" {
+  metadata {
+    name = "ride-service"
+  }
+  
+  spec {
+    replicas = 10
+    
+    template {
+      spec {
+        container {
+          name  = "ride-service"
+          image = "grabarose/ride-service:latest"
+          
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+          }
+        }
+      }
+    }
+  }
+}
