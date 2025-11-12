@@ -1,0 +1,9 @@
+// services/ride/src/ev.ts
+export function calculateEVIncentive(driver, price) {
+  if (driver.ev) {
+    const bonus = price * 0.1;
+    mintRose(driver.id, 2);
+    return bonus;
+  }
+  return 0;
+}
