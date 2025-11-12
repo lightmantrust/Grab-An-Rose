@@ -4,7 +4,8 @@ with added driver and client security
 A female-only ride-hailing and delivery platform for the Philippines.  
 This is the MVP monorepo containing microservices, infrastructure, and mobile app code.
 This implementation provides a complete production-ready SaaS platform for Grab A Rose with all specified features, including cinematic UX, AI pricing, XRP/Solana hybrid payments, SOS system, and full regulatory compliance.
----
+This implementation ensures that Grab A Rose maintains fair pricing, route integrity, and customer satisfaction while providing immediate compensation for legitimate route changes. The system balances automation with human oversight to handle edge cases effectively.
+
 
 ## 🚀 Features (MVP)
 - Female drivers and riders only.
@@ -15,6 +16,5 @@ This implementation provides a complete production-ready SaaS platform for Grab 
 - GitHub Actions CI/CD pipeline.
 - Redis + Postgres planned integrations.
 
----
 
 ## 📂 Repository Structure
