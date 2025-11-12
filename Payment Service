@@ -1,0 +1,19 @@
+// services/payment/src/gift.ts
+import express from 'express';
+import { XRPLClient } from 'xrpl';
+import { SolanaClient } from '@solana/web3.js';
+
+const app = express();
+
+app.post('/gift', async (req) => {
+  const { toPhone, amount, type } = req.body;
+  
+  if (type === 'XRP') {
+    await xrpl.pay(userWallet, toPhone, amount);
+  } else {
+    await anchor.transferRose(userWallet, toPhone, amount);
+  }
+  
+  // Send notification
+  await fcm.send(toPhone, `You got ${amount} ${type}!`);
+});
