@@ -1,0 +1,21 @@
+// services/sos/src/index.ts
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { createClient } from 'redis';
+
+const server = createServer();
+const io = new Server(server);
+const redis = createClient();
+
+io.on('connection', (socket) => {
+  socket.on('sos:trigger', async (loc) => {
+    // Find nearby drivers within 3km
+    const nearby = await redis.geoRadius('drivers', loc.lng, loc.lat, 3000);
+    
+    // Alert drivers with bonus
+    nearby.forEach(d => io.to(d).emit('sos:alert', { loc, bonus: 20 }));
+    
+    // Auto-escalate to PNP
+    await pnpApi.alert(loc);
+  });
+});
