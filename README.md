@@ -1,4 +1,5 @@
-# Grab An 🌹
+# Grab A Rose🌹 (ride-hailing) for Cebu City Philippines 🇵🇭 
+with added driver and client security 
 
 A female-only ride-hailing and delivery platform for the Philippines.  
 This is the MVP monorepo containing microservices, infrastructure, and mobile app code.
