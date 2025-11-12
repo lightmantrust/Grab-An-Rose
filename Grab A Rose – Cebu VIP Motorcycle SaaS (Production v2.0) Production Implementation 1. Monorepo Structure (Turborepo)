@@ -1,0 +1,18 @@
+grab-a-rose/
+├── apps/
+│   ├── client/          # React Native (Expo)
+│   ├── driver/          # React Native (Expo)
+│   └── admin/           # Next.js App Router
+├── services/
+│   ├── auth/            # JWT + KYC
+│   ├── ride/            # Matching + AI pricing
+│   ├── payment/         # GCash/Maya/XRP
+│   ├── token/           # ROSE + XRP bridge
+│   ├── ml/              # FastAPI + Scikit
+│   ├── sos/             # Redis Geo + PNP
+│   └── verify/          # OCR + LTO/NBI
+├── infra/
+│   ├── terraform/       # AWS EKS
+│   ├── docker/          # Service containers
+│   └── k6/              # Load tests
+└── package.json
