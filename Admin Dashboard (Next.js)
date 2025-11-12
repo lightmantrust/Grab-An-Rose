@@ -1,0 +1,26 @@
+// apps/admin/src/components/TableauEmbed.tsx
+'use client';
+
+import { useEffect } from 'react';
+import { TableauViz } from 'tableau-react';
+
+export default function TableauEmbed() {
+  useEffect(() => {
+    const viz = new TableauViz();
+    
+    viz.addEventListener('customviewload', (e) => {
+      if (e.detail.customViewName === 'SOS Alert') {
+        triggerSpine('apocalypse');
+      }
+    });
+  }, []);
+  
+  return (
+    <div className="w-full h-[600px]">
+      <TableauViz 
+        src="https://public.tableau.com/views/GrabARose/Dashboard"
+        options={{ hideTabs: true }}
+      />
+    </div>
+  );
+}
