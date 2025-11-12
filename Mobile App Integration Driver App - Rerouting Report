@@ -1,0 +1,131 @@
+// apps/driver/src/screens/RerouteReportScreen.tsx
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { apiService } from '../services/api';
+
+const REROUTE_REASONS = [
+  { id: 'road_works', label: 'Road Works/Construction' },
+  { id: 'safety_concern', label: 'Safety Concern' },
+  { id: 'traffic', label: 'Heavy Traffic' },
+  { id: 'no_go_zone', label: 'No-Go Zone' },
+  { id: 'other', label: 'Other Reason' }
+];
+
+export default function RerouteReportScreen() {
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [details, setDetails] = useState('');
+  const navigation = useNavigation();
+
+  const submitReport = async () => {
+    if (!selectedReason) {
+      Alert.alert('Error', 'Please select a reason for rerouting');
+      return;
+    }
+
+    try {
+      await apiService.post('/ride/reroute-report', {
+        reason: selectedReason,
+        details
+      });
+
+      Alert.alert(
+        'Report Submitted',
+        'Your rerouting report has been submitted. The customer has been notified.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to submit report');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Report Route Change</Text>
+      <Text style={styles.subtitle}>
+        Please report the reason for changing your route
+      </Text>
+
+      <View style={styles.reasonsContainer}>
+        {REROUTE_REASONS.map((reason) => (
+          <TouchableOpacity
+            key={reason.id}
+            style={[
+              styles.reasonButton,
+              selectedReason === reason.id && styles.selectedReason
+            ]}
+            onPress={() => setSelectedReason(reason.id)}
+          >
+            <Text style={styles.reasonText}>{reason.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <TextInput
+        style={styles.detailsInput}
+        placeholder="Additional details (optional)"
+        value={details}
+        onChangeText={setDetails}
+        multiline
+      />
+
+      <TouchableOpacity style={styles.submitButton} onPress={submitReport}>
+        <Text style={styles.submitText}>Submit Report</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#1a1a2e'
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#aaa',
+    marginBottom: 20
+  },
+  reasonsContainer: {
+    marginBottom: 20
+  },
+  reasonButton: {
+    padding: 15,
+    borderRadius: 8,
+    backgroundColor: '#16213e',
+    marginBottom: 10
+  },
+  selectedReason: {
+    backgroundColor: '#e94560'
+  },
+  reasonText: {
+    color: '#fff',
+    fontSize: 16
+  },
+  detailsInput: {
+    height: 100,
+    backgroundColor: '#16213e',
+    borderRadius: 8,
+    padding: 15,
+    color: '#fff',
+    marginBottom: 20
+  },
+  submitButton: {
+    backgroundColor: '#0f3460',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
+});
