@@ -1,0 +1,17 @@
+// services/token/src/bridge.ts
+import { Connection, Keypair } from '@solana/web3.js';
+import { Program, AnchorProvider } from '@project-serum/anchor';
+import { Wormhole } from '@wormhole-foundation/sdk';
+
+export async function bridge(rose: number, from: string, to: string) {
+  // Mint ROSE on Solana
+  const roseTx = await anchor.mintRose(rose);
+  
+  // Create Wormhole VAA
+  const vaa = await wormhole.publish(roseTx.signature);
+  
+  // Set up XRPL trustline
+  const trust = await xrpl.submitTrustSet(to, 'ROSE', rose);
+  
+  return { roseTx, vaa, trust };
+}
