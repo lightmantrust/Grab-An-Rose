@@ -1,0 +1,22 @@
+// services/verify/src/index.ts
+import express from 'express';
+import multer from 'multer';
+import Tesseract from 'tesseract.js';
+
+const app = express();
+const upload = multer();
+
+app.post('/verify/driver', upload.array('docs'), async (req) => {
+  // OCR document scanning
+  const ocr = await Tesseract.recognize(req.files[0].buffer);
+  
+  // Verify with LTO and NBI
+  const lto = await ltoApi.checkDL(ocr.data.text);
+  const nbi = await nbiApi.check(ocr.data.text);
+  
+  // Biometric verification
+  const kyc = await jumio.verify(req.body.selfie);
+  
+  // Mint reward if verified
+  if (lto && nbi && kyc) mintRose(req.user.id, 50);
+});
