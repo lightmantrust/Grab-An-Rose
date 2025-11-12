@@ -1,0 +1,115 @@
+Implementation Overview
+I'll implement an auto-pay system that triggers when the destination is reached, along with route integrity monitoring to prevent unnecessary detours. The system will also handle legitimate rerouting scenarios with fair compensation for both parties.
+
+1. Destination Detection & Auto-Pay System
+Backend Implementation (Ride Service)
+
+// services/ride/src/destinationManager.ts
+import { calculateDistance } from './utils/geo';
+import { processPayment } from '../payment/service';
+import { emitToUser } from '../socket/service';
+
+export class DestinationManager {
+  private activeRides = new Map<string, RideSession>();
+
+  // Track ride progress
+  async updateLocation(rideId: string, location: GeoLocation) {
+    const ride = this.activeRides.get(rideId);
+    if (!ride || ride.status !== 'active') return;
+
+    // Update current location
+    ride.currentLocation = location;
+    ride.routeHistory.push(location);
+    
+    // Check if destination reached (within 50m radius)
+    const distanceToDest = calculateDistance(location, ride.destination);
+    
+    if (distanceToDest <= 0.05) { // 50 meters
+      await this.processArrival(rideId);
+    }
+    
+    // Check for route deviation
+    await this.checkRouteIntegrity(rideId);
+  }
+
+  // Process arrival and trigger auto-pay
+  private async processArrival(rideId: string) {
+    const ride = this.activeRides.get(rideId);
+    if (!ride) return;
+    
+    try {
+      // Mark ride as completed
+      ride.status = 'completed';
+      ride.completionTime = new Date();
+      
+      // Calculate final fare (base + any legitimate adjustments)
+      const finalFare = this.calculateFinalFare(ride);
+      
+      // Process auto-payment
+      const paymentResult = await processPayment({
+        rideId,
+        amount: finalFare.php,
+        currency: 'PHP',
+        recipient: ride.driver.walletAddress,
+        description: `Auto-payment for ride ${rideId}`
+      });
+      
+      // Convert and process XRP payment if needed
+      if (ride.paymentMethod === 'XRP') {
+        await processPayment({
+          rideId,
+          amount: finalFare.xrp,
+          currency: 'XRP',
+          recipient: ride.driver.walletAddress,
+          description: `Auto-payment for ride ${rideId}`
+        });
+      }
+      
+      // Notify both parties
+      emitToUser(ride.customer.id, 'ride:completed', {
+        rideId,
+        fare: finalFare,
+        paymentId: paymentResult.id
+      });
+      
+      emitToUser(ride.driver.id, 'ride:payment_processed', {
+        rideId,
+        fare: finalFare,
+        paymentId: paymentResult.id
+      });
+      
+      // Record completion
+      await this.recordRideCompletion(rideId, finalFare);
+      
+    } catch (error) {
+      console.error('Auto-pay failed:', error);
+      emitToUser(ride.driver.id, 'ride:payment_failed', { 
+        rideId, 
+        error: error.message 
+      });
+    }
+  }
+  
+  // Calculate final fare with adjustments
+  private calculateFinalFare(ride: RideSession): FareBreakdown {
+    let finalFare = ride.agreedFare;
+    
+    // Apply adjustments for legitimate rerouting
+    if (ride.reroutingEvents.length > 0) {
+      const totalExtraDistance = ride.reroutingEvents.reduce(
+        (sum, event) => sum + event.extraDistance, 0
+      );
+      
+      // Cap extra cost at 20% of original fare
+      const maxExtra = ride.agreedFare.php * 0.2;
+      const extraCost = Math.min(totalExtraDistance * 50, maxExtra);
+      
+      finalFare = {
+        php: ride.agreedFare.php + extraCost,
+        xrp: (ride.agreedFare.php + extraCost) / 148
+      };
+    }
+    
+    return finalFare;
+  }
+}
