@@ -1,0 +1,21 @@
+// apps/driver/src/screens/NavigationScreen.tsx
+import { Gyroscope } from 'expo-sensors';
+import { useDriverContext } from '../context/DriverContext';
+
+export default function NavigationScreen() {
+  const { state, dispatch } = useDriverContext();
+  
+  useEffect(() => {
+    Gyroscope.addListener(gyro => {
+      dispatch({ type: 'UPDATE_TILT', payload: gyro });
+    });
+  }, []);
+  
+  return (
+    <View style={{ transform: [{ rotateY: state.tilt.y * 0.5 }] }}>
+      <SpinePlayer skeleton="phoenix_wings" />
+      <Rive src="speed_indicator.riv" />
+      <HUD speed={state.speed} />
+    </View>
+  );
+}
