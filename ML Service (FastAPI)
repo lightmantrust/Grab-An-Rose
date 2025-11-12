@@ -1,0 +1,20 @@
+# services/ml/src/main.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+
+app = FastAPI()
+model = joblib.load('surge_model.pkl')
+
+class PriceReq(BaseModel):
+    dist: float
+    hour: int
+    vip: bool
+    ev: bool
+
+@app.post("/price")
+def price(req: PriceReq):
+    base = 50 * req.dist
+    surge = model.predict([[req.dist, req.hour, req.vip, req.ev]])[0]
+    total = (base + (100 if req.vip else 0)) * surge * (0.9 if req.ev else 1)
+    return {"php": round(total), "xrp": round(total/148, 4)}
